@@ -12,12 +12,17 @@ class CompraProvider extends ChangeNotifier {
   String? _error;
   CompraResponseModel? _compraResponse;
   List<MisTicketModel> _misTickets = [];
+  String _filtroTickets = 'comprados';
+  bool _isLoadingTickets = false;
+  int _ticketsRequestSeq = 0;
 
   List<ZonaModel> get zonas => _zonas;
   bool get isLoading => _isLoading;
+  bool get isLoadingTickets => _isLoadingTickets;
   String? get error => _error;
   CompraResponseModel? get compraResponse => _compraResponse;
   List<MisTicketModel> get misTickets => _misTickets;
+  String get filtroTickets => _filtroTickets;
 
   Future<void> loadZonas(int eventoId) async {
     _isLoading = true;
@@ -70,19 +75,46 @@ class CompraProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> loadMisTickets() async {
-    _isLoading = true;
+  Future<void> loadMisTickets({String? filtro}) async {
+    final filtroSolicitado = filtro ?? _filtroTickets;
+    final cambioFiltro = filtro != null && filtro != _filtroTickets;
+
+    if (filtro != null) {
+      _filtroTickets = filtro;
+    }
+
+    final requestId = ++_ticketsRequestSeq;
+
+    if (cambioFiltro) {
+      _misTickets = [];
+    }
+
+    _isLoadingTickets = true;
     _error = null;
     notifyListeners();
 
     try {
-      _misTickets = await _compraRepository.getMisTickets();
+      final tickets = await _compraRepository.getMisTickets(filtro: filtroSolicitado);
+
+      if (requestId != _ticketsRequestSeq) return;
+
+      _misTickets = tickets;
+      _error = null;
     } catch (e) {
-      _error = e.toString();
+      if (requestId != _ticketsRequestSeq) return;
+
+      final errorStr = e.toString();
+      if (errorStr.contains('Exception: ')) {
+        _error = errorStr.split('Exception: ').last;
+      } else {
+        _error = errorStr;
+      }
       _misTickets = [];
     }
 
-    _isLoading = false;
-    notifyListeners();
+    if (requestId == _ticketsRequestSeq) {
+      _isLoadingTickets = false;
+      notifyListeners();
+    }
   }
 }

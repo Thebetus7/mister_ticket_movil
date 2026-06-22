@@ -15,8 +15,8 @@ class CompraApi {
     return _client.post(ApiConstants.comprar, body: body);
   }
 
-  Future<ApiResponse> getMisTickets() {
-    return _client.get(ApiConstants.misTickets);
+  Future<ApiResponse> getMisTickets({String filtro = 'comprados'}) {
+    return _client.get(ApiConstants.misTickets, queryParams: {'filtro': filtro});
   }
 
   Future<ApiResponse> transferirTicket(int ticketId, int destinatarioId) {

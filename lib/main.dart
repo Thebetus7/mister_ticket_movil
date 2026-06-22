@@ -12,6 +12,7 @@ import 'presentation/state/feed_provider.dart';
 import 'presentation/state/compra_provider.dart';
 import 'presentation/state/notificacion_provider.dart';
 import 'presentation/state/amistad_provider.dart';
+import 'presentation/state/verificador_provider.dart';
 import 'core/notifications/fcm_background_handler.dart';
 
 void main() async {
@@ -38,6 +39,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => CompraProvider()),
         ChangeNotifierProvider(create: (_) => NotificacionProvider()),
         ChangeNotifierProvider(create: (_) => AmistadProvider()),
+        ChangeNotifierProvider(create: (_) => VerificadorProvider()),
       ],
       child: const MisterTicketApp(),
     ),

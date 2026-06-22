@@ -157,9 +157,9 @@ class ApiClient {
         throw UnauthorizedException(
             'Sesión expirada. Inicie sesión nuevamente.');
       case 403:
-        throw ForbiddenException('No tiene permisos para esta acción.');
+        throw ForbiddenException(errorMessage);
       case 404:
-        throw NotFoundException('Recurso no encontrado.');
+        throw NotFoundException(errorMessage);
       case 422:
         throw ValidationApiException('Error de validación.', errors: body);
       case 500:

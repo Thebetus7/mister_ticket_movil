@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../state/compra_provider.dart';
 import '../../../data/models/mis_ticket_model.dart';
+import '../../widgets/ticket_qr_widget.dart';
 import 'transferir_ticket_sheet.dart';
 
 
@@ -55,103 +56,147 @@ class _MisTicketsPageState extends State<MisTicketsPage> {
         color: themeColor,
         backgroundColor: const Color(0xFF161626),
         onRefresh: () async {
-          await Provider.of<CompraProvider>(context, listen: false).loadMisTickets();
+          final provider = Provider.of<CompraProvider>(context, listen: false);
+          await provider.loadMisTickets();
         },
         child: Consumer<CompraProvider>(
           builder: (context, provider, child) {
-            if (provider.isLoading && provider.misTickets.isEmpty) {
-              return const Center(
-                child: CircularProgressIndicator(color: Color(0xFF7C6FF7)),
-              );
-            }
-
-            if (provider.error != null && provider.misTickets.isEmpty) {
-              return Center(
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.error_outline_rounded,
-                            color: Colors.redAccent, size: 64),
-                        const SizedBox(height: 16),
-                        const Text(
-                          'No pudimos cargar tus tickets.',
-                          style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          provider.error!,
-                          style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 13),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 24),
-                        ElevatedButton(
-                          onPressed: () {
-                            provider.loadMisTickets();
-                          },
-                          style: ElevatedButton.styleFrom(backgroundColor: themeColor),
-                          child: const Text('Reintentar'),
-                        ),
-                      ],
+            return Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                  child: SegmentedButton<String>(
+                    segments: const [
+                      ButtonSegment(value: 'comprados', label: Text('Comprados')),
+                      ButtonSegment(value: 'usados', label: Text('Usados')),
+                    ],
+                    selected: {provider.filtroTickets},
+                    onSelectionChanged: (selection) {
+                      final nuevoFiltro = selection.first;
+                      if (nuevoFiltro == provider.filtroTickets) return;
+                      provider.loadMisTickets(filtro: nuevoFiltro);
+                    },
+                    style: ButtonStyle(
+                      foregroundColor: WidgetStateProperty.resolveWith((states) {
+                        if (states.contains(WidgetState.selected)) {
+                          return Colors.white;
+                        }
+                        return Colors.white54;
+                      }),
+                      backgroundColor: WidgetStateProperty.resolveWith((states) {
+                        if (states.contains(WidgetState.selected)) {
+                          return themeColor;
+                        }
+                        return const Color(0xFF161626);
+                      }),
                     ),
                   ),
                 ),
-              );
-            }
-
-            if (provider.misTickets.isEmpty) {
-              return Center(
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF161626),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(Icons.confirmation_number_outlined,
-                              color: themeColor.withOpacity(0.4), size: 64),
-                        ),
-                        const SizedBox(height: 20),
-                        const Text(
-                          'Aún no tienes tickets comprados',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Tus boletos para eventos aparecerán en esta sección una vez completes una compra exitosa.',
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.5),
-                            fontSize: 13,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  ),
+                Expanded(
+                  child: _buildTicketList(context, provider, themeColor),
                 ),
-              );
-            }
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
 
-            return ListView.builder(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-              itemCount: provider.misTickets.length,
-              itemBuilder: (context, index) {
-                final ticket = provider.misTickets[index];
+  Widget _buildTicketList(BuildContext context, CompraProvider provider, Color themeColor) {
+    if (provider.isLoadingTickets) {
+      return const Center(
+        child: CircularProgressIndicator(color: Color(0xFF7C6FF7)),
+      );
+    }
+
+    if (provider.error != null && provider.misTickets.isEmpty) {
+      return Center(
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline_rounded, color: Colors.redAccent, size: 64),
+                const SizedBox(height: 16),
+                const Text(
+                  'No pudimos cargar tus tickets.',
+                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  provider.error!,
+                  style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 13),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () => provider.loadMisTickets(),
+                  style: ElevatedButton.styleFrom(backgroundColor: themeColor),
+                  child: const Text('Reintentar'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (provider.misTickets.isEmpty) {
+      final esUsados = provider.filtroTickets == 'usados';
+      return Center(
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF161626),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.confirmation_number_outlined,
+                      color: themeColor.withOpacity(0.4), size: 64),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  esUsados ? 'No tienes tickets usados' : 'Aún no tienes tickets comprados',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  esUsados
+                      ? 'Los tickets que ya fueron escaneados en la entrada aparecerán aquí.'
+                      : 'Tus boletos para eventos aparecerán en esta sección una vez completes una compra exitosa.',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.5),
+                    fontSize: 13,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+      itemCount: provider.misTickets.length,
+      itemBuilder: (context, index) {
+        final ticket = provider.misTickets[index];
                 
                 return Container(
                   margin: const EdgeInsets.only(bottom: 20),
@@ -355,18 +400,7 @@ class _MisTicketsPageState extends State<MisTicketsPage> {
                               ),
                               const SizedBox(width: 16),
                               
-                              Container(
-                                width: 70,
-                                height: 70,
-                                padding: const EdgeInsets.all(6),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: CustomPaint(
-                                  painter: QrPainter(),
-                                ),
-                              ),
+                              TicketQrWidget(codigoQr: ticket.codigoQr),
                             ],
                           ),
                               if (ticket.transferible) ...[
@@ -397,63 +431,5 @@ class _MisTicketsPageState extends State<MisTicketsPage> {
                 );
               },
             );
-          },
-        ),
-      ),
-    );
   }
-}
-
-class QrPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.black
-      ..style = PaintingStyle.fill;
-
-    // Pintar esquinas de un código QR tradicional
-    // Esquina superior izquierda
-    canvas.drawRect(Rect.fromLTWH(0, 0, 16, 16), paint);
-    canvas.drawRect(Rect.fromLTWH(3, 3, 10, 10), Paint()..color = Colors.white);
-    canvas.drawRect(Rect.fromLTWH(5, 5, 6, 6), paint);
-
-    // Esquina superior derecha
-    canvas.drawRect(Rect.fromLTWH(size.width - 16, 0, 16, 16), paint);
-    canvas.drawRect(Rect.fromLTWH(size.width - 13, 3, 10, 10), Paint()..color = Colors.white);
-    canvas.drawRect(Rect.fromLTWH(size.width - 11, 5, 6, 6), paint);
-
-    // Esquina inferior izquierda
-    canvas.drawRect(Rect.fromLTWH(0, size.height - 16, 16, 16), paint);
-    canvas.drawRect(Rect.fromLTWH(3, size.height - 13, 10, 10), Paint()..color = Colors.white);
-    canvas.drawRect(Rect.fromLTWH(5, size.height - 11, 6, 6), paint);
-
-    // Generar cuadrícula simulada interna con apariencia de QR real
-    final randomPaint = Paint()
-      ..color = Colors.black
-      ..style = PaintingStyle.fill;
-
-    // Patrón predefinido para consistencia visual sin usar Math.random
-    final points = [
-      // Fila superior interna
-      const Offset(22, 2), const Offset(26, 2), const Offset(34, 2),
-      // Fila media
-      const Offset(20, 10), const Offset(28, 12), const Offset(38, 8),
-      const Offset(6, 22), const Offset(14, 26), const Offset(22, 22), const Offset(30, 24), const Offset(38, 22),
-      const Offset(10, 32), const Offset(18, 30), const Offset(26, 32), const Offset(34, 30),
-      const Offset(22, 38), const Offset(30, 38), const Offset(38, 38),
-    ];
-
-    double blockWidth = 4;
-    double blockHeight = 4;
-
-    for (var pt in points) {
-      double x = pt.dx * (size.width / 44);
-      double y = pt.dy * (size.height / 44);
-      canvas.drawRect(Rect.fromLTWH(x, y, blockWidth, blockHeight), randomPaint);
-      canvas.drawRect(Rect.fromLTWH(x + 5, y + 5, blockWidth, blockHeight), randomPaint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

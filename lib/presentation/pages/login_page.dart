@@ -312,6 +312,26 @@ class _LoginPageState extends State<LoginPage> {
                           user: 'artista1',
                           pass: 'artista12345',
                         ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildQuickLoginButton(
+                                label: 'Verificador 1',
+                                user: 'verificador1',
+                                pass: 'verificador12345',
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: _buildQuickLoginButton(
+                                label: 'Verificador 2',
+                                user: 'verificador2',
+                                pass: 'verificador12345',
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ),

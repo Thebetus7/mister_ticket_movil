@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../data/models/compra_response_model.dart';
-import '../../pages/tickets/mis_tickets_page.dart'; // Import para QrPainter
+import '../../widgets/ticket_qr_widget.dart';
 
 class ConfirmacionCompraPage extends StatelessWidget {
   final CompraResponseModel compraResponse;
@@ -226,18 +226,7 @@ class ConfirmacionCompraPage extends StatelessWidget {
                                       ],
                                     ),
                                   ),
-                                  Container(
-                                    width: 50,
-                                    height: 50,
-                                    padding: const EdgeInsets.all(4),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(6),
-                                    ),
-                                    child: CustomPaint(
-                                      painter: QrPainter(),
-                                    ),
-                                  ),
+                                  TicketQrWidget(codigoQr: primerTicket.codigoQr, size: 50),
                                 ],
                               ),
                             ),

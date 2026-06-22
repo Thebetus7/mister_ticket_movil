@@ -44,8 +44,12 @@ class ApiConstants {
       '$baseUrl/eventos/eventos/$eventoId/zonas-disponibles/';
   static const String comprar = '$baseUrl/tickets/comprar/';
   static const String misTickets = '$baseUrl/tickets/tickets/mis-tickets/';
+  static const String verificarQr = '$baseUrl/tickets/tickets/verificar-qr/';
   static String transferirTicket(int ticketId) =>
       '$baseUrl/tickets/tickets/$ticketId/transferir/';
+
+  // Verificador
+  static const String misRegistros = '$baseUrl/eventos/registros-acceso/mis-registros/';
 
   // Amistades
   static const String amistades = '$baseUrl/usuarios/amistades/';

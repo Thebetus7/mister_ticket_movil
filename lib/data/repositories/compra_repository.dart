@@ -24,8 +24,8 @@ class CompraRepository {
     );
   }
 
-  Future<List<MisTicketModel>> getMisTickets() async {
-    return await _compraService.getMisTickets();
+  Future<List<MisTicketModel>> getMisTickets({String filtro = 'comprados'}) async {
+    return await _compraService.getMisTickets(filtro: filtro);
   }
 
   Future<void> transferirTicket(int ticketId, int destinatarioId) async {

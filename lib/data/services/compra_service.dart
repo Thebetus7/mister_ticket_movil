@@ -38,8 +38,8 @@ class CompraService {
     }
   }
 
-  Future<List<MisTicketModel>> getMisTickets() async {
-    final response = await _compraApi.getMisTickets();
+  Future<List<MisTicketModel>> getMisTickets({String filtro = 'comprados'}) async {
+    final response = await _compraApi.getMisTickets(filtro: filtro);
     if (response.data is List) {
       final List<dynamic> data = response.data as List<dynamic>;
       return data.map((json) => MisTicketModel.fromJson(json)).toList();

@@ -7,6 +7,8 @@ import 'notificaciones/pages/detalle_evento_notificacion_page.dart';
 import 'home/home_feed_page.dart';
 import 'tickets/mis_tickets_page.dart';
 import 'musica/mi_musica_page.dart';
+import 'verificador/historial_escaneos_page.dart';
+import 'verificador/escanear_qr_page.dart';
 import 'perfil/perfil_page.dart';
 import '../state/notificacion_provider.dart';
 import '../../config/routes.dart';
@@ -81,6 +83,7 @@ class _DashboardPageState extends State<DashboardPage> with WidgetsBindingObserv
 
     final profileProvider = Provider.of<ProfileProvider>(context);
     final isFan = profileProvider.roles.contains('fan');
+    final isVerificador = profileProvider.roles.contains('verificador');
     final nombreUsuario = (profileProvider.nombreCompleto != null &&
             profileProvider.nombreCompleto!.isNotEmpty)
         ? profileProvider.nombreCompleto!
@@ -89,7 +92,24 @@ class _DashboardPageState extends State<DashboardPage> with WidgetsBindingObserv
     final List<Widget> pages = [];
     final List<BottomNavigationBarItem> navBarItems = [];
 
-    if (isFan) {
+    if (isVerificador) {
+      pages.addAll([
+        const HistorialEscaneosPage(),
+        const EscanearQrPage(),
+      ]);
+      navBarItems.addAll(const [
+        BottomNavigationBarItem(
+          icon: Icon(Icons.history_rounded),
+          activeIcon: Icon(Icons.history_rounded),
+          label: 'Historial',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.qr_code_scanner_rounded),
+          activeIcon: Icon(Icons.qr_code_scanner_rounded),
+          label: 'Escanear',
+        ),
+      ]);
+    } else if (isFan) {
       pages.addAll([
         const HomeFeedPage(),
         const NotificacionesPage(),
@@ -161,7 +181,7 @@ class _DashboardPageState extends State<DashboardPage> with WidgetsBindingObserv
 
     return Scaffold(
       backgroundColor: const Color(0xFF0F0F1A),
-      appBar: _selectedIndex == 0
+      appBar: (_selectedIndex == 0 && !isVerificador) || isVerificador
           ? AppBar(
               backgroundColor: const Color(0xFF1A1A2E),
               title: Row(
